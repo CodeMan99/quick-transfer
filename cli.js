@@ -1,29 +1,31 @@
 #!/usr/bin/env node
 
-var chalk = require('chalk');
-var createDebug = require('debug');
-var debug = createDebug('quick-transfer:cli');
-var display = require('./display-url.js');
-var fastGlob = require('fast-glob');
-var fs = require('fs');
-var internalIP = require('internal-ip');
-var mime = require('mime-types');
-var minimist = require('minimist');
-var net = require('net');
-var parseAuthor = require('parse-author');
-var path = require('path');
-var pkg = require('./package.json');
-var serveOnce = require('./serve-once.js');
-var Stats = require('stats-ctor');
-var StatStream = require('./stat-stream.js');
-var Vinyl = require('vinyl');
-var yazl = require('yazl');
-var colors = {
+'use strict';
+
+const chalk = require('chalk');
+const createDebug = require('debug');
+const debug = createDebug('quick-transfer:cli');
+const display = require('./display-url.js');
+const fastGlob = require('fast-glob');
+const fs = require('fs');
+const internalIP = require('internal-ip');
+const mime = require('mime-types');
+const minimist = require('minimist');
+const net = require('net');
+const parseAuthor = require('parse-author');
+const path = require('path');
+const pkg = require('./package.json');
+const serveOnce = require('./serve-once.js');
+const Stats = require('stats-ctor');
+const StatStream = require('./stat-stream.js');
+const Vinyl = require('vinyl');
+const yazl = require('yazl');
+const colors = {
 	error: chalk.red,
 	warning: chalk.cyan,
 	info: chalk.gray
 };
-var S_IFREG = 0o100000; // fs.constants.S_IFREG which is not available in node v4.x
+const S_IFREG = 0o100000; // fs.constants.S_IFREG which is not available in node v4.x
 
 if (require.main === module) {
 	process.title = 'quick-transfer';
@@ -46,7 +48,7 @@ if (require.main === module) {
 }
 
 function main(argv, callback) {
-	var options = minimist(argv, {
+	const options = minimist(argv, {
 		alias: {
 			a: 'address',
 			d: 'display',
@@ -78,20 +80,21 @@ function main(argv, callback) {
 			'type'
 		]
 	});
-	var filenames = options._.slice();
-	var ready = (err, file) => {
+	const filenames = options._.slice();
+	const ready = (err, file) => {
 		if (err) return callback(err);
 
-		var server = serveOnce(file, (sErr, info) => {
+		const server = serveOnce(file, (sErr, info) => {
 			callback(sErr);
 			debug('server stopped %O', info);
 		});
 
 		server.listen(parseInt(options.port, 10) || 0, net.isIPv4(options.address) ? options.address : '0.0.0.0', () => {
-			var binding = server.address();
-			var address = binding.address;
-			var port = binding.port;
-			var result = null;
+			const binding = server.address();
+			const address = binding.address;
+			const port = binding.port;
+
+			let result = null;
 
 			debug('server listening on %s:%s', address, port);
 
@@ -111,7 +114,7 @@ function main(argv, callback) {
 				console.log(show.uri);
 				console.log(show.qrcode);
 			}).catch(rErr => {
-				var displayError = new Error('Unable to create URI or QR code');
+				const displayError = new Error('Unable to create URI or QR code');
 
 				displayError.original = rErr;
 
@@ -187,8 +190,9 @@ function version() {
 }
 
 function doStdin(options, callback) {
-	var filename = options.filename || 'stdin.txt';
-	var cwd = process.cwd();
+	const cwd = process.cwd();
+
+	let filename = options.filename || 'stdin.txt';
 
 	debug('sending server data read from stdin');
 
@@ -196,11 +200,11 @@ function doStdin(options, callback) {
 		filename = path.basename(filename, '.txt') + '.' + options.extension;
 	}
 
-	var stat = new Stats({
+	const stat = new Stats({
 		mode: S_IFREG | (process.umask() ^ 0o666)
 	});
-	var contents = new StatStream(stat);
-	var file = new Vinyl({
+	const contents = new StatStream(stat);
+	const file = new Vinyl({
 		contents: contents,
 		cwd: cwd,
 		path: path.join(cwd, filename),
@@ -217,8 +221,9 @@ function doStdin(options, callback) {
 }
 
 function doSingleFile(filename, options, callback) {
-	var cwd = process.cwd();
-	var displayName = options.filename || filename;
+	const cwd = process.cwd();
+
+	let displayName = options.filename || filename;
 
 	if (options.extension) {
 		displayName = path.basename(displayName, path.extname(displayName)) + '.' + options.extension;
@@ -232,13 +237,13 @@ function doSingleFile(filename, options, callback) {
 		fs.fstat(fd, (fErr, stat) => {
 			if (fErr) return (fs.close(fd), callback(fErr));
 
-			var contents = fs.createReadStream(filename, {
+			const contents = fs.createReadStream(filename, {
 				autoClose: true,
 				fd: fd,
 				start: 0,
 				end: stat.size
 			});
-			var file = new Vinyl({
+			const file = new Vinyl({
 				contents: contents,
 				cwd: cwd,
 				path: path.resolve(cwd, displayName),
@@ -251,8 +256,9 @@ function doSingleFile(filename, options, callback) {
 }
 
 function doMultipleFiles(filenames, options, callback) {
-	var filename = options.filename || 'archive.zip';
-	var cwd = process.cwd();
+	const cwd = process.cwd();
+
+	let filename = options.filename || 'archive.zip';
 
 	debug('sending server an archive of multiple files');
 
@@ -265,21 +271,21 @@ function doMultipleFiles(filenames, options, callback) {
 		onlyFiles: false,
 		stats: true
 	}).then(filestats => {
-		var zip = new yazl.ZipFile();
-		var stat = new Stats({
+		const zip = new yazl.ZipFile();
+		const stat = new Stats({
 			mode: S_IFREG | (process.umask() ^ 0o666)
 		});
-		var contents = new StatStream(stat);
-		var file = new Vinyl({
+		const contents = new StatStream(stat);
+		const file = new Vinyl({
 			contents: contents,
 			cwd: cwd,
 			path: path.join(cwd, filename),
 			stat: stat
 		});
 
-		for (var fstat of filestats) {
-			var pathname = path.relative(cwd, fstat.path);
-			var zipOptions = {
+		for (const fstat of filestats) {
+			const pathname = path.relative(cwd, fstat.path);
+			const zipOptions = {
 				compress: true,
 				forceZip64Format: false,
 				mode: fstat.mode,
@@ -288,7 +294,7 @@ function doMultipleFiles(filenames, options, callback) {
 			};
 
 			if (fstat.isFile()) {
-				var fstream = fs.createReadStream(fstat.path);
+				const fstream = fs.createReadStream(fstat.path);
 
 				debug('adding "%s" to archive', pathname);
 

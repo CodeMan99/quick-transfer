@@ -1,5 +1,7 @@
-var debug = require('debug')('quick-transfer:stat-stream');
-var Transform = require('stream').Transform;
+'use strict';
+
+const debug = require('debug')('quick-transfer:stat-stream');
+const Transform = require('stream').Transform;
 
 module.exports = StatStream;
 
@@ -7,8 +9,8 @@ module.exports = StatStream;
  * Stream that populates the given stat's size, blksize, & blocks.
  *
  * @example basic usage
- * var stat = new fs.Stats();
- * var contents = new StatStream(stat);
+ * const stat = new fs.Stats();
+ * const contents = new StatStream(stat);
  * src.pipe(contents).on('finish', () => {
  * 	// treat `contents` like a Readable source here
  * });
@@ -34,7 +36,7 @@ StatStream.prototype = Object.create(Transform.prototype, {
 });
 
 StatStream.prototype._transform = function(chunk, enc, next) {
-	var stat = this._stats;
+	const stat = this._stats;
 
 	stat.size += chunk.byteLength;
 	stat.blocks = Math.ceil(stat.size / stat.blksize) * this.blocks;

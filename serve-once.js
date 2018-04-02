@@ -1,9 +1,11 @@
-var contentDisposition = require('content-disposition');
-var debug = require('debug')('quick-transfer:serve-once');
-var http = require('http');
-var mime = require('mime-types');
-var path = require('path');
-var url = require('url');
+'use strict';
+
+const contentDisposition = require('content-disposition');
+const debug = require('debug')('quick-transfer:serve-once');
+const http = require('http');
+const mime = require('mime-types');
+const path = require('path');
+const url = require('url');
 
 module.exports = serveOnce;
 
@@ -17,16 +19,17 @@ module.exports = serveOnce;
 function serveOnce(file, callback) {
 	debug('serving file %O', file);
 
-	var basename = path.basename(file.path);
-	var pathname = '/' + basename;
-	var server = http.createServer((req, res) => {
-		var location = url.parse(req.url);
-		var closing = true;
+	const basename = path.basename(file.path);
+	const pathname = '/' + basename;
+	const server = http.createServer((req, res) => {
+		const location = url.parse(req.url);
+
+		let closing = true;
 
 		debug('received request for %s', location.pathname);
 
 		if (location.pathname !== pathname) {
-			var body = 'Unknown file: ' + location.pathname;
+			const body = 'Unknown file: ' + location.pathname;
 
 			debug('responding 404, "%s" did not match expected "%s"', location.pathname, pathname);
 
@@ -38,7 +41,7 @@ function serveOnce(file, callback) {
 			});
 			res.end(body);
 		} else {
-			var headers = {
+			const headers = {
 				'Connection': 'close',
 				'Content-Disposition': contentDisposition(basename),
 				'Content-Length': file.stat.size,

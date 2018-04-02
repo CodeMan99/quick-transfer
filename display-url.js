@@ -1,12 +1,14 @@
-var debug = require('debug')('quick-transfer:display-url');
-var path = require('path');
-var qrcode = require('qrcode-terminal');
-var url = require('url');
+'use strict';
+
+const debug = require('debug')('quick-transfer:display-url');
+const path = require('path');
+const qrcode = require('qrcode-terminal');
+const url = require('url');
 
 module.exports = display;
 
 function display(host, port, file) {
-	var uri = url.format({
+	const uri = url.format({
 		protocol: 'http:',
 		hostname: host,
 		port: port,
