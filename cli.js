@@ -23,6 +23,7 @@ var colors = {
 	warning: chalk.cyan,
 	info: chalk.gray
 };
+var S_IFREG = 0o100000; // fs.constants.S_IFREG which is not available in node v4.x
 
 if (require.main === module) {
 	process.title = 'quick-transfer';
@@ -180,7 +181,7 @@ function doStdin(options, callback) {
 	}
 
 	var stat = new Stats({
-		mode: fs.constants.S_IFREG | (process.umask() ^ 0o666)
+		mode: S_IFREG | (process.umask() ^ 0o666)
 	});
 	var contents = new StatStream(stat);
 	var file = new Vinyl({
@@ -250,7 +251,7 @@ function doMultipleFiles(filenames, options, callback) {
 	}).then(filestats => {
 		var zip = new yazl.ZipFile();
 		var stat = new Stats({
-			mode: fs.constants.S_IFREG | (process.umask() ^ 0o666)
+			mode: S_IFREG | (process.umask() ^ 0o666)
 		});
 		var contents = new StatStream(stat);
 		var file = new Vinyl({
