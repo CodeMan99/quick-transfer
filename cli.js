@@ -86,7 +86,9 @@ function main(argv, callback) {
 		});
 
 		server.listen(parseInt(options.port, 10) || 0, net.isIPv4(options.address) ? options.address : '0.0.0.0', () => {
-			var {address, port} = server.address();
+			var binding = server.address();
+			var address = binding.address;
+			var port = binding.port;
 			var qrcode = null;
 
 			debug('server listening on %s:%s', address, port);
