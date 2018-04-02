@@ -27,6 +27,7 @@ function serveOnce(file, callback) {
 		let closing = true;
 
 		debug('received request for %s', location.pathname);
+		debug('request headers %O', req.headers);
 
 		if (location.pathname !== pathname) {
 			const body = 'Unknown file: ' + location.pathname;
