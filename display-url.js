@@ -16,8 +16,13 @@ function display(host, port, file) {
 	debug('formated uri: "%s"', uri);
 
 	return new Promise(resolve => {
-		debug('generated qrcode');
+		qrcode.generate(uri, str => {
+			debug('generated qrcode');
 
-		qrcode.generate(uri, resolve);
+			resolve({
+				qrcode: str,
+				uri: uri
+			});
+		});
 	});
 }

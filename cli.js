@@ -30,6 +30,8 @@ if (require.main === module) {
 	process.exitCode = 0;
 	main(process.argv.slice(2), err => {
 		if (err) {
+			if (debug.enabled && err.origianl) err = err.original;
+
 			process.exitCode = Math.max(err.exitCode || 1, process.exitCode);
 
 			err.message && console.error(colors.error(err.message));
@@ -89,25 +91,37 @@ function main(argv, callback) {
 			var binding = server.address();
 			var address = binding.address;
 			var port = binding.port;
-			var qrcode = null;
+			var result = null;
 
 			debug('server listening on %s:%s', address, port);
 
 			if (net.isIPv4(options.display)) {
-				qrcode = display(options.display, port, file);
+				result = display(options.display, port, file);
 			} else if (address === '0.0.0.0' || address === '127.0.0.1') {
 				debug('getting internal IP because address is a loopback device');
 
-				qrcode = internalIP.v4().then(ip => {
+				result = internalIP.v4().then(ip => {
 					return display(ip, port, file);
 				});
 			} else {
-				qrcode = display(address, port, file);
+				result = display(address, port, file);
 			}
 
-			qrcode.then(str => {
-				console.log(str);
-			}); // handling errors here is not the easiest. I need to kill the server if that happens.
+			result.then(show => {
+				console.log(show.uri);
+				console.log(show.qrcode);
+			}).catch(rErr => {
+				var displayError = new Error('Unable to create URI or QR code');
+
+				displayError.original = rErr;
+
+				// there should not be any socket connections open at this point... hopefully
+				server.removeAllListeners();
+				server.close();
+				file.contents.destroy();
+
+				callback(displayError);
+			});
 		});
 	};
 
