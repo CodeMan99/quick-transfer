@@ -22,8 +22,8 @@ const Vinyl = require('vinyl');
 const yazl = require('yazl');
 const colors = {
 	error: chalk.red,
-	warning: chalk.cyan,
-	info: chalk.gray
+	warning: chalk.magenta,
+	info: chalk.green
 };
 const S_IFREG = 0o100000; // fs.constants.S_IFREG which is not available in node v4.x
 
@@ -111,7 +111,7 @@ function main(argv, callback) {
 			}
 
 			result.then(show => {
-				console.log(show.uri);
+				console.log(colors.info(show.uri));
 				console.log(show.qrcode);
 			}).catch(rErr => {
 				const displayError = new Error('Unable to create URI or QR code');
@@ -165,7 +165,7 @@ function main(argv, callback) {
 function usage() {
 	console.log(/* eslint-disable indent */
 `
-  $ quick-transfer [files]
+  $ ${colors.info('quick-transfer')} [files]
 
     -a, --address <IPv4>      IP address for the server to bind on when listening
                               for requests
@@ -186,7 +186,7 @@ function usage() {
 }
 
 function version() {
-	console.log(`Version ${pkg.version}, written by ${parseAuthor(pkg.author).name}`);
+	console.log(`Version ${colors.info(pkg.version)}, written by ${colors.info(parseAuthor(pkg.author).name)}`);
 }
 
 function doStdin(options, callback) {
